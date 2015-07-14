@@ -5,7 +5,7 @@ int setup()
   cli;
   EIMSK |= 1<<INT0;
   EICRA |= (0<<ICS00 | 0<<ICS01);
-  sei
+  sei;
 }
 ISR(INT0_vect)
 {
