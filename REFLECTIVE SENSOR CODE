@@ -1,13 +1,52 @@
-int setup()
+#define F_CPU 14745600UL
+
+#include <avr/io.h>
+#include <avr/interrupt.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <util/delay.h>
+static int uart_putchar(char c, FILE *stream);
+static int uart_getchar(FILE *stream);
+FILE mystdout = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
+FILE mystdin = FDEV_SETUP_STREAM(NULL, uart_getchar, _FDEV_SETUP_READ);
+
+static int uart_putchar(char c, FILE *stream)
 {
-  DDRD |= ~(1<<PD2);
-  PORTD = (1<<PD2);
-  cli;
-  EIMSK |= 1<<INT0;
-  EICRA |= (0<<ICS00 | 0<<ICS01);
-  sei;
+	loop_until_bit_is_set(UCSR0A, UDRE0);
+	UDR0 = c;
+	return 0;
 }
-ISR(INT0_vect)
+static int uart_getchar(FILE *stream)
 {
-    motor turn right
+	loop_until_bit_is_set(UCSR0A, RXC0); /* Wait until data exists. */
+	return UDR0;
+}
+void init_uart(void)
+{
+	UCSR0B = (1<<RXEN0) | (1<<TXEN0);
+	UBRR0 = 7;
+	stdout = &mystdout;
+	stdin = &mystdin;
+}
+
+int main(void)
+{
+   init_uart();
+   
+   DDRB |= (1<<PB0);
+   DDRB &= ~(1<<PB1);
+   
+   printf("Sensor Parameters Initialized\n");
+   
+   PORTB |= (1<<PB0);
+   
+   while(1){
+	   
+	   if(PINB |= (1<<PB1)){
+		   printf("Sensor Reading\n");
+   }else{
+	   printf("No Response\n");
+     }
+   }
+return 1;   
 }
